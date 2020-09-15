@@ -1,26 +1,36 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {Component, Suspense} from 'react';
+import {Switch} from 'react-router-dom';
+import NavBar from './components/navBar/NavBar'
+import {connect} from 'react-redux';
+import authOperations from './redux/auth/authOperations';
+import routes from './routes';
+import PrivatRoute from './PrivatRoute';
+import PublicRoute from './PublicRoute';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+
+class App extends Component {
+componentDidMount () {
+  this.props.onGetCurrentUser();
 }
 
-export default App;
+  render() {
+    return (
+      <>
+        <NavBar />
+        <Suspense fallback={<h1>Loading...</h1>}>
+        <Switch>
+          {routes.map(route => {
+            return route.private ? (<PrivatRoute key={route.path} {...route} />
+              ) : (
+             <PublicRoute key={route.path} {...route} restricted={route.restricted} />)
+          })}
+        </Switch>
+        </Suspense>
+        </>
+    )
+  }
+}
+
+
+export default connect(null, {onGetCurrentUser: authOperations.getCurrentUser})(App)
